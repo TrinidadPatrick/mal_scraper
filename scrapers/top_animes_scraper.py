@@ -14,8 +14,8 @@ def get_top_animes(page: Page):
     
     return top_animes
 
-def scrape(page):
-    page.goto("https://myanimelist.net/topanime.php")
+def scrape_top_animes(page, type):
+    page.goto(f"https://myanimelist.net/topanime.php?type={type}")
     
     if page.locator('#accept-btn').is_visible():
         page.locator('#accept-btn').click()
