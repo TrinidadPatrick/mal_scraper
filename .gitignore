@@ -1,3 +1,5 @@
 venv
 *.csv
+.vscode
+__pycache__
 deploy_docker.bat
