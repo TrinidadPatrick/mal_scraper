@@ -37,7 +37,7 @@ def run():
 
             writer.writeheader()
 
-            writer.writerows(test)
+            writer.writerows(results)
 
         print("Data scrapped")
 
