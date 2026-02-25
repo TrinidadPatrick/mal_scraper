@@ -29,11 +29,11 @@ def run():
             match function:
                 case 'scrape_top_animes':
                     print(f'Scraping {type} animes...')
-                    # data = scrape_top_animes(page, type)
-                    # file_path = Path(filename)
-                    # file_path.parent.mkdir(parents=True, exist_ok=True)
-                    # save_to_json(data, file_path)
-                    # print(f'Done scraped {type} animes...')
+                    data = scrape_top_animes(page, type)
+                    file_path = Path(filename)
+                    file_path.parent.mkdir(parents=True, exist_ok=True)
+                    save_to_json(data, file_path)
+                    print(f'Done scraped {type} animes...')
                 case 'scrape_recommended_animes':
                     print(f'Scraping {type} animes...')
                 case 'scrape_seasonal_animes':

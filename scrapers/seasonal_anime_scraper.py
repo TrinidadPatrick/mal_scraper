@@ -9,7 +9,7 @@ def get_seasonal_animes(page: Page):
     seasonal_animes = []
 
     for index, book in enumerate(seasonal_anime_lists):
-        print(f"Scraping anime # {index}....")
+        print(f"Scraping anime # {index + 1}....")
         parsed_data = parse(book)
         
         seasonal_animes.append(parsed_data)
