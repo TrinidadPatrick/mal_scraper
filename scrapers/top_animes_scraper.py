@@ -22,6 +22,7 @@ def scrape_top_animes(page, type):
         
     results = []
 
+    # Only get animes on page 1
     for i in range(1):
         
         result = get_top_animes(page)
