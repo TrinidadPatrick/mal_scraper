@@ -18,8 +18,9 @@ def get_seasonal_animes(page: Page):
 
 def scrape_seasonal_animes(page: Page, type):
     seasons = ['winter', 'spring', 'summer', 'fall']
-    years = get_year_range(2026)
+    years = get_year_range(2025)
     
+    results = []
     for year in years:
         for season in seasons:
             page.goto(f"https://myanimelist.net/anime/season/{year}/{season}")
@@ -38,11 +39,11 @@ def scrape_seasonal_animes(page: Page, type):
             if showR18Btn.is_visible():
                 showR18Btn.click()
             
-            results = []
+            
             result = get_seasonal_animes(page)
             
             results.append({'year' : year, 'season' : season, 'data' : result})
             
-            return results
+    return results
     
     return

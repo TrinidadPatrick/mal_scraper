@@ -9,7 +9,25 @@ def parse(book: Page):
         title = title_container.locator('.link-title').inner_text()
         
         details = book.locator('.prodsrc')
-        details_child = details.locator('.info').inner_text()
+        
+        info_items = []
+        try:
+            info_spans = details.locator('.info .item').all()
+            for span in info_spans:
+                info_items.append(span.inner_text().strip().replace('\n', ' '))
+        except:
+            pass
+            
+        properties = []
+        try:
+            property_divs = book.locator('.properties > .property').all()
+            for prop in property_divs:
+                caption = prop.locator('.caption').inner_text().strip()
+                items = prop.locator('.item').all()
+                item_texts = [item.inner_text().strip() for item in items]
+                properties.append({'name': caption, 'values': item_texts})
+        except:
+            pass
         
         members = book.locator('.member').inner_text()
         
@@ -27,9 +45,9 @@ def parse(book: Page):
         return {
             'image' : image,
             'title': title, 
-            # 'type': type, 
             'genres': genres,
-            'info': details_child,
+            'properties': properties,
+            'info': info_items,
             'members' : members, 
             'score': score
         }

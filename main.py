@@ -6,7 +6,9 @@ import json
 from pathlib import Path
 
 def save_to_json(data, filename):
-    with open(filename, 'w', newline='', encoding='utf-8') as file:
+    file_path = Path(filename)
+    file_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(file_path, 'w', newline='', encoding='utf-8') as file:
         json.dump(data, file, indent=4, ensure_ascii=False)
 
 def run():
@@ -30,18 +32,14 @@ def run():
                 case 'scrape_top_animes':
                     print(f'Scraping {type} animes...')
                     data = scrape_top_animes(page, type)
-                    file_path = Path(filename)
-                    file_path.parent.mkdir(parents=True, exist_ok=True)
-                    save_to_json(data, file_path)
+                    save_to_json(data, filename)
                     print(f'Done scraped {type} animes...')
                 case 'scrape_recommended_animes':
                     print(f'Scraping {type} animes...')
                 case 'scrape_seasonal_animes':
                     print(f'Scraping {type} animes...')
                     data = scrape_seasonal_animes(page, type)
-                    file_path = Path(filename)
-                    file_path.parent.mkdir(parents=True, exist_ok=True)
-                    save_to_json(data, file_path)
+                    save_to_json(data, filename)
                     print(f'Done scraped {type} animes...')
         
 def main():
