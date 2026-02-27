@@ -1,9 +1,11 @@
 from scrapers.seasonal_anime_scraper import scrape_seasonal_animes
-from playwright.sync_api import sync_playwright
+from playwright.async_api import async_playwright
+from playwright_stealth import Stealth
 from browser_setup import get_browser_context
 from scrapers.top_animes_scraper import scrape_top_animes
 import json
 from pathlib import Path
+import asyncio
 
 def save_to_json(data, filename):
     file_path = Path(filename)
@@ -11,9 +13,13 @@ def save_to_json(data, filename):
     with open(file_path, 'w', newline='', encoding='utf-8') as file:
         json.dump(data, file, indent=4, ensure_ascii=False)
 
-def run():
-    with sync_playwright() as playwright:
-        page =  get_browser_context(playwright)
+async def run():
+    async with async_playwright() as playwright:
+        page = await get_browser_context(playwright)
+        
+        # Apply stealth to the page
+        stealth = Stealth()
+        await stealth.apply_stealth_async(page)
         
         tasks = [
             ('output_json/top_animes/top_animes.json', '', 'scrape_top_animes'),
@@ -31,20 +37,20 @@ def run():
             match function:
                 case 'scrape_top_animes':
                     print(f'Scraping {type} animes...')
-                    data = scrape_top_animes(page, type)
+                    data = await scrape_top_animes(page, type)
                     save_to_json(data, filename)
                     print(f'Done scraped {type} animes...')
                 case 'scrape_recommended_animes':
                     print(f'Scraping {type} animes...')
                 case 'scrape_seasonal_animes':
                     print(f'Scraping {type} animes...')
-                    data = scrape_seasonal_animes(page, type)
+                    data = await scrape_seasonal_animes(page, type)
                     save_to_json(data, filename)
                     print(f'Done scraped {type} animes...')
-        
-def main():
-    run()
+
+async def main():
+    await run()
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())

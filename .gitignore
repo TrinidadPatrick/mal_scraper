@@ -4,3 +4,4 @@ venv
 __pycache__
 deploy_docker.bat
 output_json
+browser_data

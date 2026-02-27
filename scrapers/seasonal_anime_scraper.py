@@ -1,14 +1,15 @@
 from tools.get_year_range import get_year_range
 from tools.parser.seasonal_anime_data_parser import parse
-from playwright.sync_api import Page
+from browser_setup import wait_for_captcha
+from playwright.async_api import Page
+import asyncio
+import random
 import time
 
-import time
-from playwright.sync_api import Page
 
-def get_seasonal_animes(page: Page):
+async def get_seasonal_animes(page: Page):
 
-    seasonal_animes = page.evaluate("""
+    seasonal_animes = await page.evaluate("""
         () => {
             const results = [];
             const lists = document.querySelectorAll('.seasonal-anime-list');
@@ -24,7 +25,7 @@ def get_seasonal_animes(page: Page):
                         const title = book.querySelector('.title .link-title')?.innerText.trim();
                         
                         const infoItems = Array.from(book.querySelectorAll('.prodsrc .info .item'))
-                            .map(span => span.innerText.trim().replace(/\\n/g, ' '));
+                            .map(span => span.innerText.trim().replace(/\\\\n/g, ' '));
                         
                         const properties = Array.from(book.querySelectorAll('.properties > .property')).map(prop => ({
                             name: prop.querySelector('.caption')?.innerText.trim(),
@@ -66,32 +67,52 @@ def get_seasonal_animes(page: Page):
     
     return seasonal_animes
 
-def scrape_seasonal_animes(page: Page, type):
+async def scrape_seasonal_animes(page: Page, type):
     seasons = ['winter', 'spring', 'summer', 'fall']
-    years = get_year_range(2025)
+    years = get_year_range(1980)
+    
+    start_time = time.perf_counter()
     
     results = []
     for year in years:
         for season in seasons:
-            page.goto(f"https://myanimelist.net/anime/season/{year}/{season}")
+            print(f'Scraping {year} {season}')
+            await page.goto(f"https://myanimelist.net/anime/season/{year}/{season}", wait_until="domcontentloaded")
             
-            if page.locator('#accept-btn').is_visible():
-                page.locator('#accept-btn').click()
+            await wait_for_captcha(page)
+            
+            try:
+                await page.wait_for_selector('.seasonal-anime-list', timeout=15000)
+            except Exception:
+                print(f'Could not find anime list for {year} {season}, skipping...')
+                continue
+            
+            if await page.locator('#accept-btn').is_visible():
+                await page.locator('#accept-btn').click()
             
             kidsBtn = page.locator('.btn-show-kids.crossed')
             
             # uncheck hide kids
-            if kidsBtn.is_visible():
-                kidsBtn.click()
+            if await kidsBtn.is_visible():
+                await kidsBtn.click()
             
             # Uncheck hide r18
             showR18Btn = page.locator('.btn-show-r18.crossed')
-            if showR18Btn.is_visible():
-                showR18Btn.click()
+            if await showR18Btn.is_visible():
+                await showR18Btn.click()
             
             
-            result = get_seasonal_animes(page)
+            result = await get_seasonal_animes(page)
+            
+            print(f'Scraped {len(result)} anime for {year} {season}')
             
             results.append({'year' : year, 'season' : season, 'data' : result})
+            
+            delay = random.uniform(1.5, 4.0)
+            await asyncio.sleep(delay)
+            
+    end_time = time.perf_counter()
+    elapsed_time = end_time - start_time
+    print(f"Elapsed time for scraping seasonal animes: {elapsed_time:.4f} seconds")
             
     return results
