@@ -35,6 +35,10 @@ def parse(book: Page):
         
         genre_array = book.locator('.genre').all()
         
+        mal_id = book.locator('.genres').get_attribute('id')
+        
+        print(mal_id)
+        
         genres = []
         
         for item in genre_array:
@@ -45,6 +49,7 @@ def parse(book: Page):
         return {
             'image' : image,
             'title': title, 
+            'mal_id': mal_id,
             'genres': genres,
             'properties': properties,
             'info': info_items,

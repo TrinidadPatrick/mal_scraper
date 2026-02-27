@@ -3,16 +3,66 @@ from tools.parser.seasonal_anime_data_parser import parse
 from playwright.sync_api import Page
 import time
 
-def get_seasonal_animes(page: Page):
-    seasonal_anime_lists = page.locator(".seasonal-anime").all()
-    print(f"Found {len(seasonal_anime_lists)} items")
-    seasonal_animes = []
+import time
+from playwright.sync_api import Page
 
-    for index, book in enumerate(seasonal_anime_lists):
-        print(f"Scraping anime # {index + 1}....")
-        parsed_data = parse(book)
-        
-        seasonal_animes.append(parsed_data)
+def get_seasonal_animes(page: Page):
+
+    seasonal_animes = page.evaluate("""
+        () => {
+            const results = [];
+            const lists = document.querySelectorAll('.seasonal-anime-list');
+            
+            lists.forEach(list => {
+                const animeType = list.querySelector('.anime-header')?.innerText.trim() || 'Unknown';
+                const animeCards = list.querySelectorAll('.seasonal-anime');
+                
+                animeCards.forEach((book, index) => {
+                    console.log(`Scraping anime (${animeType}) # ${index + 1}....`);
+                    try {
+                        const image = book.querySelector('.image img')?.getAttribute('src');
+                        const title = book.querySelector('.title .link-title')?.innerText.trim();
+                        
+                        const infoItems = Array.from(book.querySelectorAll('.prodsrc .info .item'))
+                            .map(span => span.innerText.trim().replace(/\\n/g, ' '));
+                        
+                        const properties = Array.from(book.querySelectorAll('.properties > .property')).map(prop => ({
+                            name: prop.querySelector('.caption')?.innerText.trim(),
+                            values: Array.from(prop.querySelectorAll('.item')).map(i => i.innerText.trim())
+                        }));
+
+                        const genres = Array.from(book.querySelectorAll('.genre')).map(item => {
+                            const link = item.querySelector('a');
+                            const href = link?.getAttribute('href') || "";
+                            return {
+                                genre: link?.innerText.trim(),
+                                mal_id: href.split("/")[3] || null
+                            };
+                        });
+
+                        const members = book.querySelector('.member')?.innerText.trim();
+                        const score = book.querySelector('.score.score-label')?.innerText.trim();
+                        const malIdRoot = book.querySelector('.genres')?.getAttribute('id');
+
+                        results.push({
+                            type: animeType,
+                            image,
+                            title,
+                            mal_id: malIdRoot,
+                            genres,
+                            properties,
+                            info: infoItems,
+                            members,
+                            score
+                        });
+                    } catch (e) {
+                        console.error(`Error parsing index ${index}:`, e);
+                    }
+                });
+            });
+            return results;
+        }
+    """)
     
     return seasonal_animes
 
@@ -45,5 +95,3 @@ def scrape_seasonal_animes(page: Page, type):
             results.append({'year' : year, 'season' : season, 'data' : result})
             
     return results
-    
-    return
