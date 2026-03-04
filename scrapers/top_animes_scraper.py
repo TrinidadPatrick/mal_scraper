@@ -24,7 +24,6 @@ async def get_top_animes(page: Page):
                     const infoText = book.querySelector('.detail .information')?.innerText.trim() || "";
                     const detailsArray = infoText.split('\\n');
                     
-                    // Logic mirroring your Python parser:
                     // Example format: "TV (12 eps) \n Oct 2022 - Dec 2022 \n 1,234,567 members"
                     
                     const firstLine = detailsArray[0] || "";

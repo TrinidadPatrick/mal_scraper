@@ -1,7 +1,9 @@
 from tools.get_year_range import get_year_range
 from tools.parser.seasonal_anime_data_parser import parse
-from browser_setup import wait_for_captcha
+from tools.parser.anime_details_parser import getAnimeDetails
+import browser_setup
 from playwright.async_api import Page
+from browser_setup import wait_for_captcha
 import asyncio
 import random
 import time
@@ -23,6 +25,9 @@ async def get_scheduled_animes(page: Page):
                     try {
                         const image = book.querySelector('.image img')?.getAttribute('src');
                         const image2 = book.querySelector('.image img')?.getAttribute('data-src');
+                        
+                        const url = book.querySelector('.h2_anime_title a').getAttribute('href')
+                        console.log(url)
                         
                         const title = book.querySelector('.title .link-title')?.innerText.trim();
                         
@@ -51,6 +56,7 @@ async def get_scheduled_animes(page: Page):
                             type: animeType,
                             image : image || image2,
                             title,
+                            url,
                             mal_id: malIdRoot,
                             genres,
                             properties,
@@ -66,7 +72,21 @@ async def get_scheduled_animes(page: Page):
             return results;
         }
     """)
-
+    
+    
+    for i, anime in enumerate(seasonal_animes):
+        print(f"Scraping details for anime #{i + 1}: {anime['title']}")
+        detail_page = await page.context.new_page()
+        await detail_page.goto(anime['url'])
+        
+        details = await getAnimeDetails(detail_page)
+        
+        seasonal_animes[i]['full'] = details
+        
+        delay = random.uniform(1, 1.5)
+        await asyncio.sleep(delay)
+        
+        await detail_page.close()
     return seasonal_animes
 
 
@@ -77,6 +97,7 @@ async def scrape_scheduled_animes(page: Page, type):
     await page.goto(
         f"https://myanimelist.net/anime/season/schedule", wait_until="domcontentloaded"
     )
+    
 
     await wait_for_captcha(page)
 

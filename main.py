@@ -92,7 +92,7 @@ async def run():
                     data = await scrape_seasonal_animes(page, year)
                     save_to_json(data, filename)
                     print(f"Done scraped {type} animes...")
-        # await page.pause()
+        await page.pause()
 
 
 async def main():
