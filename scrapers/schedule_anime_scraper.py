@@ -7,7 +7,7 @@ import random
 import time
 
 
-async def get_seasonal_animes(page: Page):
+async def get_scheduled_animes(page: Page):
 
     seasonal_animes = await page.evaluate("""
         () => {
@@ -19,7 +19,7 @@ async def get_seasonal_animes(page: Page):
                 const animeCards = list.querySelectorAll('.seasonal-anime');
                 
                 animeCards.forEach((book, index) => {
-                    console.log(`Scraping anime (${animeType}) # ${index + 1}....`);
+                    
                     try {
                         const image = book.querySelector('.image img')?.getAttribute('src');
                         const image2 = book.querySelector('.image img')?.getAttribute('data-src');
@@ -70,54 +70,44 @@ async def get_seasonal_animes(page: Page):
     return seasonal_animes
 
 
-async def scrape_seasonal_animes(page: Page, year):
-    seasons = ["winter", "spring", "summer", "fall"]
-    years = get_year_range(int(year))
+async def scrape_scheduled_animes(page: Page, type):
 
     start_time = time.perf_counter()
 
-    results = []
-    for year in years:
-        for season in seasons:
-            print(f"Scraping {year} {season}")
-            await page.goto(
-                f"https://myanimelist.net/anime/season/{year}/{season}",
-                wait_until="domcontentloaded",
-            )
+    await page.goto(
+        f"https://myanimelist.net/anime/season/schedule", wait_until="domcontentloaded"
+    )
 
-            await wait_for_captcha(page)
+    await wait_for_captcha(page)
 
-            try:
-                await page.wait_for_selector(".seasonal-anime-list", timeout=15000)
-            except Exception:
-                print(f"Could not find anime list for {year} {season}, skipping...")
-                continue
+    try:
+        await page.wait_for_selector(".seasonal-anime-list", timeout=15000)
+    except Exception:
+        print(f"Could not find anime list, skipping...")
 
-            if await page.locator("#accept-btn").is_visible():
-                await page.locator("#accept-btn").click()
+    if await page.locator("#accept-btn").is_visible():
+        await page.locator("#accept-btn").click()
 
-            kidsBtn = page.locator(".btn-show-kids.crossed")
+    kidsBtn = page.locator(".btn-show-kids.crossed")
 
-            # uncheck hide kids
-            if await kidsBtn.is_visible():
-                await kidsBtn.click()
+    # uncheck hide kids
+    if await kidsBtn.is_visible():
+        await kidsBtn.click()
 
-            # Uncheck hide r18
-            showR18Btn = page.locator(".btn-show-r18.crossed")
-            if await showR18Btn.is_visible():
-                await showR18Btn.click()
+    # Uncheck hide r18
+    showR18Btn = page.locator(".btn-show-r18.crossed")
+    if await showR18Btn.is_visible():
+        await showR18Btn.click()
 
-            result = await get_seasonal_animes(page)
+    result = await get_scheduled_animes(page)
 
-            print(f"Scraped {len(result)} anime for {year} {season}")
+    print(f"Scraped {len(result)} anime for this season")
 
-            results.append({"year": year, "season": season, "data": result})
-
-            delay = random.uniform(1.5, 4.0)
-            await asyncio.sleep(delay)
+    delay = random.uniform(1.5, 4.0)
+    await asyncio.sleep(delay)
 
     end_time = time.perf_counter()
     elapsed_time = end_time - start_time
     print(f"Elapsed time for scraping seasonal animes: {elapsed_time:.4f} seconds")
 
-    return results
+    return result

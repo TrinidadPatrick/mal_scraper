@@ -4,8 +4,9 @@ setlocal enabledelayedexpansion
 set "option[1]=scrape_top_animes"
 set "option[2]=scrape_recommended_animes"
 set "option[3]=scrape_seasonal_animes"
-set "option[4]=Clear"
-set "option[5]=Exit"
+set "option[4]=scrape_scheduled_animes"
+set "option[5]=Clear"
+set "option[6]=Exit"
 
 :menu
 cls
@@ -15,7 +16,7 @@ echo ============================================
 echo Enter numbers separated by spaces (e.g., 1 3 4) if you want multiple options
 echo.
 
-for /L %%i in (1,1,5) do (
+for /L %%i in (1,1,6) do (
     echo [%%i] !option[%%i]!
 )
 
@@ -49,8 +50,9 @@ for %%c in (%choices%) do (
     if "%%c"=="1" ( set "found=1" & call :scrape_top_animes !pageLimit! )
     if "%%c"=="2" ( set "found=1" & call :scrape_recommended_animes )
     if "%%c"=="3" ( set "found=1" & call :scrape_seasonal_animes !year! )
-    if "%%c"=="4" ( set "found=1" & call :clear )
-    if "%%c"=="5" ( set "found=1" & exit )
+    if "%%c"=="4" ( set "found=1" & call :scrape_scheduled_animes)
+    if "%%c"=="5" ( set "found=1" & call :clear )
+    if "%%c"=="6" ( set "found=1" & exit )
 
     if "!found!"=="0" (
         echo.
@@ -89,6 +91,15 @@ echo Running scrape_seasonal_animes script...
 echo ============================================
 echo.
 python main.py scrape_seasonal_animes %1
+exit /b
+
+:scrape_scheduled_animes
+echo.
+echo ============================================
+echo Running scrape_scheduled_animes script...
+echo ============================================
+echo.
+python main.py scrape_scheduled_animes
 
 exit /b
 
