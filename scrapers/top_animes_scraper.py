@@ -60,7 +60,7 @@ async def get_top_animes(page: Page):
     
     return top_animes
 
-async def scrape_top_animes(page, type):
+async def scrape_top_animes(page, type, pageLimit):
     await page.goto(f"https://myanimelist.net/topanime.php?type={type}", wait_until="domcontentloaded")
     
     await wait_for_captcha(page)
@@ -77,9 +77,9 @@ async def scrape_top_animes(page, type):
     results = []
 
     start_time = time.perf_counter()
-    # Only get 10 pages
-    for i in range(10):
-        print(f'scraping {type} anime page # {i + 1}')
+    
+    for i in range(pageLimit):
+        print(f'scraping {type if type else 'top anime'} anime page # {i + 1}')
         result = await get_top_animes(page)
         results.extend(result)
         
@@ -98,6 +98,6 @@ async def scrape_top_animes(page, type):
         
     end_time = time.perf_counter()
     elapsed_time = end_time - start_time
-    print(f"Elapsed time for scraping {type} anime: {elapsed_time:.4f} seconds")
+    print(f"Elapsed time for scraping {type if type else 'top anime'} anime: {elapsed_time:.4f} seconds")
         
     return results

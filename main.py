@@ -1,3 +1,5 @@
+from tools.validateNumber import is_valid_integer
+from subprocess import call
 from scrapers.seasonal_anime_scraper import scrape_seasonal_animes
 from playwright.async_api import async_playwright
 from playwright_stealth import Stealth
@@ -6,6 +8,7 @@ from scrapers.top_animes_scraper import scrape_top_animes
 import json
 from pathlib import Path
 import asyncio
+import sys
 
 def save_to_json(data, filename):
     file_path = Path(filename)
@@ -32,19 +35,27 @@ async def run():
             
             ('output_json/seasonal_animes/seasonal_animes.json', 'seasonal', 'scrape_seasonal_animes'),
         ]
-        
+        func_name = sys.argv[1]
         for filename, type, function in tasks:
-            match function:
-                case 'scrape_top_animes':
-                    print(f'Scraping {type} animes...')
-                    data = await scrape_top_animes(page, type)
+            if func_name == function:
+                if func_name == 'scrape_top_animes':
+                    print(f'Scraping {type if type else 'top anime'} animes...')
+                    pageLimit = sys.argv[2]
+                    if not is_valid_integer(pageLimit):
+                        print("Invalid page limit, returning...")
+                        return
+                    data = await scrape_top_animes(page, type, int(pageLimit))
                     save_to_json(data, filename)
                     print(f'Done scraped {type} animes...')
-                case 'scrape_recommended_animes':
+                elif func_name == 'scrape_recommended_animes':
                     print(f'Scraping {type} animes...')
-                case 'scrape_seasonal_animes':
+                elif func_name == 'scrape_seasonal_animes':
                     print(f'Scraping {type} animes...')
-                    data = await scrape_seasonal_animes(page, type)
+                    year = sys.argv[2]
+                    if not is_valid_integer(year):
+                        print("Invalid year, returning...")
+                        return
+                    data = await scrape_seasonal_animes(page, year)
                     save_to_json(data, filename)
                     print(f'Done scraped {type} animes...')
 

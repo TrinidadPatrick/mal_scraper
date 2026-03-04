@@ -67,9 +67,9 @@ async def get_seasonal_animes(page: Page):
     
     return seasonal_animes
 
-async def scrape_seasonal_animes(page: Page, type):
+async def scrape_seasonal_animes(page: Page, year):
     seasons = ['winter', 'spring', 'summer', 'fall']
-    years = get_year_range(1980)
+    years = get_year_range(int(year))
     
     start_time = time.perf_counter()
     

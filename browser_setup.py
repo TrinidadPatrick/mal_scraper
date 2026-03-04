@@ -7,7 +7,7 @@ USER_DATA_DIR = str(Path(__file__).parent / "browser_data")
 async def get_browser_context(playwright):
     context = await playwright.chromium.launch_persistent_context(
         USER_DATA_DIR,
-        headless=True,
+        headless=False,
         user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
         viewport={"width": 1280, "height": 720},
         locale="en-US",
@@ -42,7 +42,7 @@ async def wait_for_captcha(page, timeout=120):
                     timeout=timeout * 1000
                 )
                 print("CAPTCHA solved. Resuming scraping...")
-                await asyncio.sleep(2)  # Brief pause after solving
+                await asyncio.sleep(2)
                 return True
             except Exception:
                 try:
