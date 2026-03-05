@@ -72,20 +72,19 @@ async def get_scheduled_animes(page: Page):
             return results;
         }
     """)
-    
-    
+
     for i, anime in enumerate(seasonal_animes):
         print(f"Scraping details for anime #{i + 1}: {anime['title']}")
         detail_page = await page.context.new_page()
-        await detail_page.goto(anime['url'])
-        
+        await detail_page.goto(anime["url"])
+
         details = await getAnimeDetails(detail_page)
-        
-        seasonal_animes[i]['full'] = details
-        
+        print(details, "\n\n")
+        seasonal_animes[i]["full"] = details
+
         delay = random.uniform(1, 1.5)
         await asyncio.sleep(delay)
-        
+
         await detail_page.close()
     return seasonal_animes
 
@@ -97,7 +96,6 @@ async def scrape_scheduled_animes(page: Page, type):
     await page.goto(
         f"https://myanimelist.net/anime/season/schedule", wait_until="domcontentloaded"
     )
-    
 
     await wait_for_captcha(page)
 
@@ -129,6 +127,6 @@ async def scrape_scheduled_animes(page: Page, type):
 
     end_time = time.perf_counter()
     elapsed_time = end_time - start_time
-    print(f"Elapsed time for scraping seasonal animes: {elapsed_time:.4f} seconds")
+    print(f"Elapsed time for scraping scheduled animes: {elapsed_time:.4f} seconds")
 
     return result

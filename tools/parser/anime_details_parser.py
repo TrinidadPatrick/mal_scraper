@@ -1,15 +1,25 @@
 from playwright.async_api import Page
 from tools.validateNumber import is_valid_integer
 
+
 async def getAnimeDetails(page: Page):
-    title = await page.locator('.title-name strong').inner_text() if await page.locator('.title-name strong').count() > 0 else None
-    title_english = await page.locator('.title-english').inner_text() if await page.locator('.title-english').count() > 0 else None
-    
-    score = await page.locator('div.score-label').inner_text()
-    
+    title = (
+        await page.locator(".title-name strong").inner_text()
+        if await page.locator(".title-name strong").count() > 0
+        else None
+    )
+    title_english = (
+        await page.locator(".title-english").inner_text()
+        if await page.locator(".title-english").count() > 0
+        else None
+    )
+
+    score = await page.locator("div.score-label").inner_text()
+
     member_element_selector = ".fl-l.score"
-    
-    after_content = await page.evaluate(f"""
+
+    after_content = await page.evaluate(
+        r"""
     (selector) => {{
         const element = document.querySelector(selector);
         if (!element) return null;
@@ -18,22 +28,40 @@ async def getAnimeDetails(page: Page):
         
         return style.getPropertyValue('content');
     }}
-    """, member_element_selector)
-    
-    users = after_content.strip('"').strip("'").split(" ")[0].replace(",","")
-    
-    rank = await page.locator('span.numbers.ranked strong').inner_text()
-    popularity = await page.locator('span.numbers.popularity strong').inner_text()
-    members = await page.locator('span.numbers.members strong').inner_text()
-    
-    season = await page.locator('span.information.season a').inner_text() if await page.locator('span.information.season a').count() > 0 else None
-    type = await page.locator('span.information.type a').inner_text() if await page.locator('span.information.type a').count() > 0 else None
-    studio = await page.locator('span.information.studio.author').inner_text() if await page.locator('span.information.studio.author').count() > 0 else None
-    
-    synopsis = await page.locator('p[itemprop="description"]').inner_text() if await page.locator('p[itemprop="description"]').count() > 0 else None
-    
-    infos = await page.locator('div.spaceit_pad').all()
-    
+    """,
+        member_element_selector,
+    )
+
+    users = after_content.strip('"').strip("'").split(" ")[0].replace(",", "")
+
+    rank = await page.locator("span.numbers.ranked strong").inner_text()
+    popularity = await page.locator("span.numbers.popularity strong").inner_text()
+    members = await page.locator("span.numbers.members strong").inner_text()
+
+    season = (
+        await page.locator("span.information.season a").inner_text()
+        if await page.locator("span.information.season a").count() > 0
+        else None
+    )
+    type = (
+        await page.locator("span.information.type a").inner_text()
+        if await page.locator("span.information.type a").count() > 0
+        else None
+    )
+    studio = (
+        await page.locator("span.information.studio.author").inner_text()
+        if await page.locator("span.information.studio.author").count() > 0
+        else None
+    )
+
+    synopsis = (
+        await page.locator('p[itemprop="description"]').inner_text()
+        if await page.locator('p[itemprop="description"]').count() > 0
+        else None
+    )
+
+    infos = await page.locator("div.spaceit_pad").all()
+
     info_dict = {}
     for i in infos:
         value = await i.inner_text()
@@ -42,24 +70,48 @@ async def getAnimeDetails(page: Page):
             key = splitted[0].strip()
             val = splitted[1].strip()
             info_dict[key] = val
-    
-    print(info_dict['Episodes'])
-        
+
+    episodes = info_dict["Episodes"] if info_dict["Episodes"] else None
+    status = info_dict["Status"] if info_dict["Status"] else None
+
+    aired_from = (
+        info_dict["Aired"].split("to")[0].strip() if info_dict["Aired"] else None
+    )
+
+    aired_to = info_dict["Aired"].split("to")[1].strip() if info_dict["Aired"] else None
+
+    broadcast = info_dict["Broadcast"] if info_dict["Broadcast"] else None
+
+    rawProducers = info_dict["Producers"] if info_dict["Producers"] else None
+
+    producers = (
+        [str.strip() for str in rawProducers.split(",")] if rawProducers else None
+    )
+
+    rawSource = info_dict["Source"] if info_dict["Source"] else None
+
+    source = [str.strip() for str in rawSource.split(",")] if rawSource else None
+
+    rating = info_dict["Rating"] if info_dict["Rating"] else None
+
     return {
-        "title" : {
-            "title_japanese" : title,
-            "title_english" : title_english
+        "title": {"title_japanese": title, "title_english": title_english},
+        "score": score,
+        "scored_by": int(users) if is_valid_integer(users) else 0,
+        "rank": int(rank.replace("#", "")),
+        "popularity": int(popularity.replace("#", "")),
+        "members": int(members.replace(",", "")),
+        "season": season,
+        "type": type,
+        "studio": studio,
+        "synopsis": synopsis,
+        "status": status,
+        "producers": producers,
+        "broadcast": broadcast,
+        "source": source,
+        "rating": rating,
+        "airing": {
+            "from ": aired_from,
+            "to ": aired_to,
         },
-        "score" : score,
-        "scored_by" : int(users) if is_valid_integer(users) else 0,
-        "rank" : int(rank.replace("#","")),
-        "popularity" : int(popularity.replace("#","")),
-        "members" : int(members.replace(",","")),
-        
-        "season" : season,
-        "type" : type,
-        "studio" : studio,
-        
-        "synopsis" : synopsis
-        
     }
