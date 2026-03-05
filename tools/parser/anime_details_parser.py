@@ -72,6 +72,7 @@ async def getAnimeDetails(page: Page):
             info_dict[key] = val
 
     episodes = info_dict["Episodes"] if info_dict["Episodes"] else None
+    duration = info_dict["Duration"] if info_dict["Duration"] else None
     status = info_dict["Status"] if info_dict["Status"] else None
 
     aired_from = (
@@ -104,6 +105,8 @@ async def getAnimeDetails(page: Page):
         "season": season,
         "type": type,
         "studio": studio,
+        "episodes": episodes,
+        "duration": duration,
         "synopsis": synopsis,
         "status": status,
         "producers": producers,
