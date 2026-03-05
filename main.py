@@ -2,6 +2,7 @@ from scrapers.schedule_anime_scraper import scrape_scheduled_animes
 from tools.validateNumber import is_valid_integer
 from subprocess import call
 from scrapers.seasonal_anime_scraper import scrape_seasonal_animes
+from scrapers.characters_scraper import scrape_characters
 from playwright.async_api import async_playwright
 from playwright_stealth import Stealth
 from browser_setup import get_browser_context
@@ -60,6 +61,11 @@ async def run():
                 "schedule",
                 "scrape_scheduled_animes",
             ),
+            (
+                "output_json/characters/characters.json",
+                "characters",
+                "scrape_characters",
+            ),
         ]
         func_name = sys.argv[1]
         for filename, type, function in tasks:
@@ -92,6 +98,15 @@ async def run():
                     data = await scrape_seasonal_animes(page, year)
                     save_to_json(data, filename)
                     print(f"Done scraped {type} animes...")
+                elif func_name == "scrape_characters":
+                    print(f"Scraping anime/manga charactes")
+                    pageLimit = sys.argv[2]
+                    if not is_valid_integer(pageLimit):
+                        print("Invalid page limit, returning...")
+                        return
+                    data = await scrape_characters(page, int(pageLimit))
+                    save_to_json(data, filename)
+                    print(f"Done scraped characters")
         # await page.pause()
 
 
